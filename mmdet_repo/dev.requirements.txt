@@ -1,0 +1,7 @@
+mypy
+flake8
+isort
+codespell
+mdformat
+docformatter
+ipykernel

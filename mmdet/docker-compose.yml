@@ -1,0 +1,73 @@
+name: mmdet
+version: '3'
+
+services:
+  dev:
+    build:
+      target: dev
+      context: .
+      args:
+        PYTORCH_VERSION: ${PYTORCH_VERSION}
+        CUDA_VERSION: ${CUDA_VERSION}
+        CUDNN_VERSION: ${CUDNN_VERSION}
+        MMDET_VERSION: ${MMDET_VERSION}
+        USERNAME: ${USERNAME}
+        UID: ${UID}
+        GID: ${GID}
+        CONTAINER_CODE_PATH: ${CONTAINER_CODE_PATH}
+        CONTAINER_TORCH_CACHE_PATH: ${CONTAINER_TORCH_CACHE_PATH}
+        CONTAINER_VSCODE_PATH: ${CONTAINER_VSCODE_PATH}
+    environment:
+        TERM: 'screen-256color'
+
+    tty: true
+    init: true
+    entrypoint: /entrypoint.sh
+
+    volumes:
+      - ./entrypoint.sh:/entrypoint.sh
+      - workspace:${CONTAINER_WORKSPACE_PATH}
+      - torch_cache:${CONTAINER_TORCH_CACHE_PATH}
+      - vscode:${CONTAINER_VSCODE_PATH}
+      - ${HOST_CODE_PATH}/mmdet:${CONTAINER_CODE_PATH}/mmdet
+      - ${HOST_CODE_PATH}/pstr:${CONTAINER_CODE_PATH}/pstr
+      - ${HOST_DATA_PATH}/cuhk-sysu-pedes:${CONTAINER_DATA_PATH}/sysu_pedes:ro
+      - ${HOST_DATA_PATH}/CUHK-SYSU:${CONTAINER_DATA_PATH}/sysu:ro
+      - ${HOST_DATA_PATH}/CUHK-PEDES:${CONTAINER_DATA_PATH}/pedes:ro
+      - ${HOST_DATA_PATH}/COCODIR:${CONTAINER_DATA_PATH}/coco:ro
+      - ${HOST_MODELS_PATH}:${CONTAINER_MODELS_PATH}:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [ gpu ]
+
+  # build:
+  #   build:
+  #     target: base
+  #     context: .
+  #     args:
+  #       PYTORCH_VERSION: ${PYTORCH_VERSION}
+  #       CUDA_VERSION: ${CUDA_VERSION}
+  #       CUDNN_VERSION: ${CUDNN_VERSION}
+  #       MMDET_VERSION: ${MMDET_VERSION}
+  #
+  #   tty: true
+  #   init: true
+  #
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             capabilities: [ gpu ]
+  #
+
+volumes:
+  vscode:
+    external: true
+  torch_cache: 
+    external: true
+  workspace: 
+
