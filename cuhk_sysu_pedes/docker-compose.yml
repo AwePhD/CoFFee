@@ -9,10 +9,10 @@ services:
         GID: ${GID}
         USERNAME: ${USERNAME}
 
-    env_file:
-      - ./.env
+    environment:
+        CONTAINER_PS1: ${CONTAINER_PS1}
     working_dir: ${CODE_PATH}
-    entrypoint: /workspace/entrypoint.sh
+    entrypoint: /entrypoint.sh
     tty: true
     init: true
 
@@ -22,6 +22,7 @@ services:
       # Docker volumes
       - vscode:${CONTAINER_VSCODE_PATH}
       # Bind volumes
+      - ./entrypoint.sh:/entrypoint.sh
       - ${HOST_CODE_PATH}/cuhk-sysu-pedes/:${CONTAINER_CODE_PATH}/cuhk-sysu-pedes
       - ${HOST_DATA_PATH}/CUHK-SYSU/:${CONTAINER_DATA_PATH}/CUHK-SYSU:ro
       - ${HOST_DATA_PATH}/CUHK-PEDES/:${CONTAINER_DATA_PATH}/CUHK-PEDES:ro

@@ -20,15 +20,8 @@ RUN mkdir /home/${USERNAME}/.vscode-server && \
   chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.vscode-server
 
 USER ${USERNAME}
-WORKDIR /workspace
-SHELL ["/bin/bash", "-c"]
-# Init conda env
-ARG CODE_PATH
-RUN echo -e \
-  "set -o vi \n" \
-  "export PS1='\W $ '" \
-  >> ~/.bashrc \
-  conda init bash
+ARG WORKDIR
+WORKDIR ${WORKDIR}
+RUN echo "export PATH='${PATH}:~/.local/bin'" >> ~/.bashrc
+RUN pip install --no-cache-dir --user pyyaml
 
-COPY ./entrypoint.sh .
-ENTRYPOINT [ "./entrypoint.sh" ]
