@@ -10,10 +10,20 @@ services:
         PYTORCH_VERSION: ${PYTORCH_VERSION}
         CUDA_VERSION: ${CUDA_VERSION}
         CUDNN_VERSION: ${CUDNN_VERSION}
+        MMENGINE_VERSION_MAJOR: ${MMENGINE_VERSION_MAJOR}
+        MMENGINE_VERSION_MINOR: ${MMENGINE_VERSION_MINOR}
+        MMENGINE_VERSION_PATCH: ${MMENGINE_VERSION_PATCH}
+        MMCV_VERSION_MAJOR: ${MMCV_VERSION_MAJOR}
+        MMCV_VERSION_MINOR: ${MMCV_VERSION_MINOR}
+        MMCV_VERSION_PATCH: ${MMCV_VERSION_PATCH}
+        MIM_VERSION_MAJOR: ${MIM_VERSION_MAJOR}
+        MIM_VERSION_MINOR: ${MIM_VERSION_MINOR}
+        MIM_VERSION_PATCH: ${MIM_VERSION_PATCH}
         MMDET_VERSION: ${MMDET_VERSION}
         USERNAME: ${USERNAME}
         UID: ${UID}
         GID: ${GID}
+        CONTAINER_HOME_PATH: ${CONTAINER_HOME_PATH}
         CONTAINER_CODE_PATH: ${CONTAINER_CODE_PATH}
         CONTAINER_TORCH_CACHE_PATH: ${CONTAINER_TORCH_CACHE_PATH}
         CONTAINER_VSCODE_PATH: ${CONTAINER_VSCODE_PATH}
@@ -26,16 +36,15 @@ services:
 
     volumes:
       - ./entrypoint.sh:/entrypoint.sh
-      - workspace:${CONTAINER_WORKSPACE_PATH}
       - torch_cache:${CONTAINER_TORCH_CACHE_PATH}
       - vscode:${CONTAINER_VSCODE_PATH}
       - ${HOST_CODE_PATH}/mmdet:${CONTAINER_CODE_PATH}/mmdet
-      - ${HOST_CODE_PATH}/pstr:${CONTAINER_CODE_PATH}/pstr
-      - ${HOST_DATA_PATH}/cuhk-sysu-pedes:${CONTAINER_DATA_PATH}/sysu_pedes:ro
+      - ${HOST_DATASET_PATH}:${CONTAINER_DATASET_PATH}:ro
       - ${HOST_DATA_PATH}/CUHK-SYSU:${CONTAINER_DATA_PATH}/sysu:ro
       - ${HOST_DATA_PATH}/CUHK-PEDES:${CONTAINER_DATA_PATH}/pedes:ro
       - ${HOST_DATA_PATH}/COCODIR:${CONTAINER_DATA_PATH}/coco:ro
       - ${HOST_MODELS_PATH}:${CONTAINER_MODELS_PATH}:ro
+    shm_size: ${SHM_SIZE} 
     deploy:
       resources:
         reservations:
@@ -43,26 +52,26 @@ services:
             - driver: nvidia
               capabilities: [ gpu ]
 
-  # build:
-  #   build:
-  #     target: base
-  #     context: .
-  #     args:
-  #       PYTORCH_VERSION: ${PYTORCH_VERSION}
-  #       CUDA_VERSION: ${CUDA_VERSION}
-  #       CUDNN_VERSION: ${CUDNN_VERSION}
-  #       MMDET_VERSION: ${MMDET_VERSION}
-  #
-  #   tty: true
-  #   init: true
-  #
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - driver: nvidia
-  #             capabilities: [ gpu ]
-  #
+  build:
+    build:
+      target: built-mmdet
+      context: .
+      args:
+        PYTORCH_VERSION: ${PYTORCH_VERSION}
+        CUDA_VERSION: ${CUDA_VERSION}
+        CUDNN_VERSION: ${CUDNN_VERSION}
+        MMDET_VERSION: ${MMDET_VERSION}
+
+    tty: true
+    init: true
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [ gpu ]
+
 
 volumes:
   vscode:

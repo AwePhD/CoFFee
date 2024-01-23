@@ -22,7 +22,7 @@ RUN rm /etc/apt/sources.list.d/cuda.list \
 
 # Install the required packages
 RUN apt-get update \
-    && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libsm6 libxrender-dev libxext6 \
+    && apt-get install -y ffmpeg git ninja-build libglib2.0-0 libsm6 libxrender-dev libxext6 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -39,16 +39,31 @@ RUN pip install openmim && \
 # as CUDA compilation should not be necessary
 FROM pytorch/pytorch:${PYTORCH_VERSION}-cuda${CUDA_VERSION}-cudnn${CUDNN_VERSION}-runtime AS base
 
+ARG MMENGINE_VERSION_MAJOR 
+ARG MMENGINE_VERSION_MINOR 
+ARG MMENGINE_VERSION_PATCH 
+ARG MMCV_VERSION_MAJOR 
+ARG MMCV_VERSION_MINOR 
+ARG MMCV_VERSION_PATCH 
+ARG MIM_VERSION_MAJOR 
+ARG MIM_VERSION_MINOR 
+ARG MIM_VERSION_PATCH 
 ENV SITE_PACKAGES="/opt/conda/lib/python3.10/site-packages"
 COPY --from=built-mmdet ${SITE_PACKAGES}/mmcv ${SITE_PACKAGES}/mmcv
-COPY --from=built-mmdet ${SITE_PACKAGES}/mmcv-2.0.1.dist-info ${SITE_PACKAGES}/mmcv-2.0.1.dist-info 
-COPY --from=built-mmdet ${SITE_PACKAGES}/mmengine ${SITE_PACKAGES}/mmengine
-COPY --from=built-mmdet ${SITE_PACKAGES}/mmengine-0.8.4.dist-info ${SITE_PACKAGES}/mmengine-0.8.4.dist-info
 COPY --from=built-mmdet ${SITE_PACKAGES}/mim ${SITE_PACKAGES}/mim
-COPY --from=built-mmdet ${SITE_PACKAGES}/openmim-0.3.9.dist-info ${SITE_PACKAGES}/openmim-0.3.9.dist-info
+COPY --from=built-mmdet ${SITE_PACKAGES}/mmengine ${SITE_PACKAGES}/mmengine
+COPY --from=built-mmdet  \ 
+	${SITE_PACKAGES}/mmcv-${MMCV_VERSION_MAJOR}.${MMCV_VERSION_MINOR}.${MMCV_VERSION_PATCH}.dist-info \
+	${SITE_PACKAGES}/mmcv-${MMCV_VERSION_MAJOR}.${MMCV_VERSION_MINOR}.${MMCV_VERSION_PATCH}.dist-info 
+COPY --from=built-mmdet \ 
+	${SITE_PACKAGES}/mmengine-${MMENGINE_VERSION_MAJOR}.${MMENGINE_VERSION_MINOR}.${MMENGINE_VERSION_PATCH}.dist-info \
+	${SITE_PACKAGES}/mmengine-${MMENGINE_VERSION_MAJOR}.${MMENGINE_VERSION_MINOR}.${MMENGINE_VERSION_PATCH}.dist-info
+COPY --from=built-mmdet \
+	${SITE_PACKAGES}/openmim-${MIM_VERSION_MAJOR}.${MIM_VERSION_MINOR}.${MIM_VERSION_PATCH}.dist-info \
+	${SITE_PACKAGES}/openmim-${MIM_VERSION_MAJOR}.${MIM_VERSION_MINOR}.${MIM_VERSION_PATCH}.dist-info
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y vim ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libsm6 libxrender-dev libxext6 \
+RUN apt-get update && apt-get install -y vim ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* 
 RUN pip install --no-cache-dir --upgrade pip mmpretrain
@@ -68,20 +83,30 @@ ARG USERNAME
 RUN addgroup --quiet --gid ${GID} ${USERNAME} && \
     adduser --quiet --uid ${UID} --gid ${GID} ${USERNAME}
 
+RUN su - ${USERNAME} -c '/opt/conda/bin/conda init bash'
+
 ENV HOME=/home/${USERNAME}
 USER ${USERNAME}
 
 ARG CONTAINER_TORCH_CACHE_PATH
 ARG CONTAINER_VSCODE_PATH
 ARG CONTAINER_WORKSPACE_PATH
-RUN mkdir -p ${CONTAINER_TORCH_CACHE_PATH} ${CONTAINER_VSCODE_PATH} ${CONTAINER_WORKSPACE_PATH}
-
-RUN echo "export PS1='[\u \W]$ '" >> ~/.bashrc \
- && echo "export PATH='$PATH:${HOME}/.local/bin'" >> ~/.bashrc 
+RUN mkdir -p ${CONTAINER_TORCH_CACHE_PATH} ${CONTAINER_VSCODE_PATH}
 
 ARG CONTAINER_CODE_PATH
 WORKDIR ${CONTAINER_CODE_PATH}
 COPY ./dev.requirements.txt ./requirements.txt
 ENV PIP_ARGS="--user --no-cache-dir"
+RUN pip install --upgrade pip
 RUN pip install ${PIP_ARGS} -r requirements.txt && rm requirements.txt
+RUN pip install ${PIP_ARGS} --upgrade typing_extensions
+
+ARG CONTAINER_HOME_PATH
+WORKDIR ${CONTAINER_HOME_PATH}
+COPY ./.bashrc ./.bashrc_addition
+RUN cat .bashrc_addition >> .bashrc  && \
+	rm ./.bashrc_addition 
+COPY ./.inputrc .
+
+WORKDIR ${CONTAINER_CODE_PATH}
 # ------------------- (END) DEV ENVIRONNEMENT --------------------

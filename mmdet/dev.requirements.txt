@@ -1,7 +1,9 @@
 mypy
 flake8
+yapf
 isort
 codespell
 mdformat
 docformatter
 ipykernel
+pytest
