@@ -1,49 +1,88 @@
 name: mmdet
 version: '3'
 
+# Defined to easily add to a service for debugging
+x-executable: &executable
+  tty: true
+  init: true
+
+x-torch-args: &torch-args
+  PYTORCH_VERSION: ${PYTORCH_VERSION}
+  CUDA_VERSION: ${CUDA_VERSION}
+  CUDNN_VERSION: ${CUDNN_VERSION}
+
+x-mmlab-args: &mmlab-args
+  MMENGINE_VERSION_MAJOR: ${MMENGINE_VERSION_MAJOR}
+  MMENGINE_VERSION_MINOR: ${MMENGINE_VERSION_MINOR}
+  MMENGINE_VERSION_PATCH: ${MMENGINE_VERSION_PATCH}
+  MMCV_VERSION_MAJOR: ${MMCV_VERSION_MAJOR}
+  MMCV_VERSION_MINOR: ${MMCV_VERSION_MINOR}
+  MMCV_VERSION_PATCH: ${MMCV_VERSION_PATCH}
+  MIM_VERSION_MAJOR: ${MIM_VERSION_MAJOR}
+  MIM_VERSION_MINOR: ${MIM_VERSION_MINOR}
+  MIM_VERSION_PATCH: ${MIM_VERSION_PATCH}
+
+x-build-args: &build-args
+  <<: 
+    - *mmlab-args
+    - *torch-args
+
+# Defined here to have shorter service definition
+x-dev-args: &dev-args
+  USERNAME: ${USERNAME}
+  UID: ${UID}
+  GID: ${GID}
+  CONTAINER_HOME_PATH: ${CONTAINER_HOME_PATH}
+  CONTAINER_CODE_PATH: ${CONTAINER_CODE_PATH}
+  CONTAINER_TORCH_CACHE_PATH: ${CONTAINER_TORCH_CACHE_PATH}
+  CONTAINER_VSCODE_PATH: ${CONTAINER_VSCODE_PATH}
+
+# Defined here to have shorter service definition
+x-dev-volumes: &dev-volumes
+  - ./entrypoint.sh:/entrypoint.sh
+  - torch_cache:${CONTAINER_TORCH_CACHE_PATH}
+  - vscode:${CONTAINER_VSCODE_PATH}
+  - ${HOST_CODE_PATH}/mmdet:${CONTAINER_CODE_PATH}/mmdet
+  - ${HOST_DATASET_PATH}:${CONTAINER_DATASET_PATH}:ro
+  - ${HOST_DATA_PATH}/CUHK-SYSU:${CONTAINER_DATA_PATH}/sysu:ro
+  - ${HOST_DATA_PATH}/CUHK-PEDES:${CONTAINER_DATA_PATH}/pedes:ro
+  - ${HOST_DATA_PATH}/COCODIR:${CONTAINER_DATA_PATH}/coco:ro
+  - ${HOST_MODELS_PATH}:${CONTAINER_MODELS_PATH}:ro
+
 services:
+  builder:
+    build:
+      target: builder
+      args: 
+        <<: *build-args
+  
+  base-devel:
+    build:
+      target: base_devel
+      args: 
+        <<: *build-args
+
+  base-runtime:
+    build:
+      target: base_runtime
+      args:
+        <<: *build-args
+
   dev:
     build:
       target: dev
-      context: .
       args:
-        PYTORCH_VERSION: ${PYTORCH_VERSION}
-        CUDA_VERSION: ${CUDA_VERSION}
-        CUDNN_VERSION: ${CUDNN_VERSION}
-        MMENGINE_VERSION_MAJOR: ${MMENGINE_VERSION_MAJOR}
-        MMENGINE_VERSION_MINOR: ${MMENGINE_VERSION_MINOR}
-        MMENGINE_VERSION_PATCH: ${MMENGINE_VERSION_PATCH}
-        MMCV_VERSION_MAJOR: ${MMCV_VERSION_MAJOR}
-        MMCV_VERSION_MINOR: ${MMCV_VERSION_MINOR}
-        MMCV_VERSION_PATCH: ${MMCV_VERSION_PATCH}
-        MIM_VERSION_MAJOR: ${MIM_VERSION_MAJOR}
-        MIM_VERSION_MINOR: ${MIM_VERSION_MINOR}
-        MIM_VERSION_PATCH: ${MIM_VERSION_PATCH}
-        MMDET_VERSION: ${MMDET_VERSION}
-        USERNAME: ${USERNAME}
-        UID: ${UID}
-        GID: ${GID}
-        CONTAINER_HOME_PATH: ${CONTAINER_HOME_PATH}
-        CONTAINER_CODE_PATH: ${CONTAINER_CODE_PATH}
-        CONTAINER_TORCH_CACHE_PATH: ${CONTAINER_TORCH_CACHE_PATH}
-        CONTAINER_VSCODE_PATH: ${CONTAINER_VSCODE_PATH}
+        <<:
+          - *build-args
+          - *dev-args
     environment:
         TERM: 'screen-256color'
 
-    tty: true
-    init: true
+    <<: *executable
     entrypoint: /entrypoint.sh
 
     volumes:
-      - ./entrypoint.sh:/entrypoint.sh
-      - torch_cache:${CONTAINER_TORCH_CACHE_PATH}
-      - vscode:${CONTAINER_VSCODE_PATH}
-      - ${HOST_CODE_PATH}/mmdet:${CONTAINER_CODE_PATH}/mmdet
-      - ${HOST_DATASET_PATH}:${CONTAINER_DATASET_PATH}:ro
-      - ${HOST_DATA_PATH}/CUHK-SYSU:${CONTAINER_DATA_PATH}/sysu:ro
-      - ${HOST_DATA_PATH}/CUHK-PEDES:${CONTAINER_DATA_PATH}/pedes:ro
-      - ${HOST_DATA_PATH}/COCODIR:${CONTAINER_DATA_PATH}/coco:ro
-      - ${HOST_MODELS_PATH}:${CONTAINER_MODELS_PATH}:ro
+      *dev-volumes
     shm_size: ${SHM_SIZE} 
     deploy:
       resources:
@@ -52,31 +91,9 @@ services:
             - driver: nvidia
               capabilities: [ gpu ]
 
-  build:
-    build:
-      target: built-mmdet
-      context: .
-      args:
-        PYTORCH_VERSION: ${PYTORCH_VERSION}
-        CUDA_VERSION: ${CUDA_VERSION}
-        CUDNN_VERSION: ${CUDNN_VERSION}
-        MMDET_VERSION: ${MMDET_VERSION}
-
-    tty: true
-    init: true
-
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              capabilities: [ gpu ]
-
-
 volumes:
   vscode:
     external: true
   torch_cache: 
     external: true
-  workspace: 
 

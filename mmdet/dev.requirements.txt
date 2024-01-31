@@ -7,3 +7,4 @@ mdformat
 docformatter
 ipykernel
 pytest
+torch-tb-profiler
