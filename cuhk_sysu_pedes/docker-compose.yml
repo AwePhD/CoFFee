@@ -8,13 +8,16 @@ services:
         UID: ${UID}
         GID: ${GID}
         USERNAME: ${USERNAME}
+        CONTAINER_VSCODE_PATH: ${CONTAINER_VSCODE_PATH}
 
     environment:
-        CONTAINER_PS1: ${CONTAINER_PS1}
+        PS1: ${CONTAINER_PS1}
+
     working_dir: ${CODE_PATH}
     entrypoint: /entrypoint.sh
     tty: true
     init: true
+    network_mode: host
 
     user: "${UID}:${GID}"
 

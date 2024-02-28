@@ -16,12 +16,14 @@ RUN  addgroup \
   --gid ${GID} \
   ${USERNAME}
 
+ARG CONTAINER_VSCODE_PATH
 RUN mkdir /home/${USERNAME}/.vscode-server && \
-  chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.vscode-server
+  chown -R ${USERNAME}:${USERNAME} ${CONTAINER_VSCODE_PATH}
 
 USER ${USERNAME}
 ARG WORKDIR
 WORKDIR ${WORKDIR}
-RUN echo "export PATH='${PATH}:~/.local/bin'" >> ~/.bashrc
+ENV PATH="${PATH}:~/.local/bin"
+
 RUN pip install --no-cache-dir --user pyyaml
 
