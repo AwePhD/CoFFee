@@ -1,11 +1,11 @@
 FROM cuhk_sysu_pedes_codebase-dev:latest
 
-# Import variables from .env file
+RUN apt update && apt install -y vim git && apt clean && rm -rf /var/lib/apt/lists/* 
+
 ARG UID
 ARG GID
 ARG USERNAME
 
-# Add host user to the container
 RUN  addgroup \
   --quiet \
   --gid ${GID} \
@@ -23,7 +23,4 @@ RUN mkdir /home/${USERNAME}/.vscode-server && \
 USER ${USERNAME}
 ARG WORKDIR
 WORKDIR ${WORKDIR}
-ENV PATH="${PATH}:~/.local/bin"
-
-RUN pip install --no-cache-dir --user pyyaml
-
+ENV PATH="${PATH}:/home/${USERNAME}/.local/bin"

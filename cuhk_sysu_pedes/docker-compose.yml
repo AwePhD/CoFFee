@@ -11,7 +11,7 @@ services:
         CONTAINER_VSCODE_PATH: ${CONTAINER_VSCODE_PATH}
 
     environment:
-        PS1: ${CONTAINER_PS1}
+        CONTAINER_PS1: ">> "
 
     working_dir: ${CODE_PATH}
     entrypoint: /entrypoint.sh

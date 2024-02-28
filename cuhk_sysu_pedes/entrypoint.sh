@@ -1,5 +1,4 @@
 #! /bin/bash
-echo "export PS1='${CONTAINER_PS1}'" >> ~/.bashrc
-. ~/.bashrc
+echo "export PS1=\"${CONTAINER_PS1}\"" >> ~/.bashrc
 pip install -e .
 sleep infinity
