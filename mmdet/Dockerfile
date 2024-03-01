@@ -53,9 +53,6 @@ RUN apt-get update && apt-get install -y vim \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* 
 RUN pip install --no-cache-dir --upgrade pip mmpretrain
-
-RUN git clone https://github.com/open-mmlab/mmdetection.git /mmdetection 
-WORKDIR /mmdetection
 # ------------------ (END) BUILD ENVIRONNEMENT ------------------
 
 # Use of more lightweight image for development as CUDA compilation should not be necessary
@@ -133,15 +130,3 @@ COPY ./.inputrc .
 
 WORKDIR ${CONTAINER_CODE_PATH}
 # ------------------- (END) DEV ENVIRONNEMENT --------------------
-
-# ---------------------------------------------------------------
-# --------------------- TRAIN ENVIRONNEMENT ---------------------
-# ---------------------------------------------------------------
-FROM base_runtime as train
-ARG HOST_MMDET_REPO_PATH
-COPY ${HOST_MMDET_REPO_PATH} .
-
-RUN pip install --no-cache-dir --upgrade setuptools \
- && pip install --no-cache-dir -e .
-
-# ------------------ (END) TRAIN ENVIRONNEMENT ------------------
