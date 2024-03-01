@@ -23,8 +23,9 @@ ENV TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0 7.5 8.0 8.6+PTX" \
 		DEBIAN_FRONTEND=noninteractive
 
 # Avoid Public GPG key error
-# https://github.com/NVIDIA/nvidia-docker/issues/1631
-RUN rm /etc/apt/sources.list.d/cuda.list \
+# https://github.com/NVIDIA/nvidia-docker/issues/163
+# || true is added in case there is no cuda.list, depends of the version of the base image1
+RUN rm /etc/apt/sources.list.d/cuda.list || true \  
     && apt-key del 7fa2af80 \
     && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub \
     && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
@@ -57,8 +58,7 @@ RUN git clone https://github.com/open-mmlab/mmdetection.git /mmdetection
 WORKDIR /mmdetection
 # ------------------ (END) BUILD ENVIRONNEMENT ------------------
 
-# Use of more lightweight image for development
-# as CUDA compilation should not be necessary
+# Use of more lightweight image for development as CUDA compilation should not be necessary
 ARG PYTORCH_VERSION
 ARG CUDA_VERSION
 ARG CUDNN_VERSION
@@ -93,9 +93,6 @@ RUN apt-get update && apt-get install -y vim ffmpeg libsm6 libxext6 git ninja-bu
  && rm -rf /var/lib/apt/lists/* 
 RUN pip install --no-cache-dir --upgrade pip mmpretrain
 RUN pip install --no-cache-dir --upgrade --upgrade-strategy only-if-needed mmcv mmengine openmim
-
-RUN git clone https://github.com/open-mmlab/mmdetection.git /mmdetection 
-WORKDIR /mmdetection
 # ------------------ (END) BUILD ENVIRONNEMENT ------------------
 
 # ---------------------------------------------------------------
@@ -136,3 +133,15 @@ COPY ./.inputrc .
 
 WORKDIR ${CONTAINER_CODE_PATH}
 # ------------------- (END) DEV ENVIRONNEMENT --------------------
+
+# ---------------------------------------------------------------
+# --------------------- TRAIN ENVIRONNEMENT ---------------------
+# ---------------------------------------------------------------
+FROM base_runtime as train
+ARG HOST_MMDET_REPO_PATH
+COPY ${HOST_MMDET_REPO_PATH} .
+
+RUN pip install --no-cache-dir --upgrade setuptools \
+ && pip install --no-cache-dir -e .
+
+# ------------------ (END) TRAIN ENVIRONNEMENT ------------------
