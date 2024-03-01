@@ -43,6 +43,7 @@ x-dev-volumes: &dev-volumes
   - torch_cache:${CONTAINER_TORCH_CACHE_PATH}
   - vscode:${CONTAINER_VSCODE_PATH}
   - ${HOST_CODE_PATH}/mmdet:${CONTAINER_CODE_PATH}/mmdet
+  - ${HOST_CODE_PATH}/pstr:${CONTAINER_CODE_PATH}/pstr
   - ${HOST_DATASET_PATH}:${CONTAINER_DATASET_PATH}:ro
   - ${HOST_DATA_PATH}/CUHK-SYSU:${CONTAINER_DATA_PATH}/sysu:ro
   - ${HOST_DATA_PATH}/CUHK-PEDES:${CONTAINER_DATA_PATH}/pedes:ro
@@ -80,6 +81,8 @@ services:
 
     <<: *executable
     entrypoint: /entrypoint.sh
+
+    network_mode: host
 
     volumes:
       *dev-volumes
