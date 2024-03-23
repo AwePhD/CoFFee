@@ -1,5 +1,4 @@
 name: mmdet
-version: '3'
 
 services:
   dev:
@@ -31,6 +30,7 @@ services:
       - vscode:${CONTAINER_VSCODE_PATH}
       - ${HOST_CODE_PATH}/mmdetection:${CONTAINER_CODE_PATH}/mmdet
       - ${HOST_MODELS_PATH}:${CONTAINER_MODELS_PATH}:ro
+      - ${HOST_DATA_PATH}/COCODIR:${CONTAINER_DATA_PATH}/coco:ro
     deploy:
       resources:
         reservations:

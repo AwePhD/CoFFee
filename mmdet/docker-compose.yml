@@ -1,6 +1,4 @@
 name: mmdet
-version: '3'
-
 # Defined to easily add to a service for debugging
 x-executable: &executable
   tty: true
