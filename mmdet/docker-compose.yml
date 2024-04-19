@@ -41,6 +41,7 @@ x-dev-volumes: &dev-volumes
   - torch_cache:${CONTAINER_TORCH_CACHE_PATH}
   - vscode:${CONTAINER_VSCODE_PATH}
   - ${HOST_CODE_PATH}/mmdet:${CONTAINER_CODE_PATH}/mmdet
+  - ${HOST_CODE_PATH}/mmdetection_td:${CONTAINER_CODE_PATH}/td
   - ${HOST_CODE_PATH}/pstr:${CONTAINER_CODE_PATH}/pstr
   - ${HOST_DATA_PATH}:${CONTAINER_DATA_PATH}:ro
   - ${HOST_MODELS_PATH}:${CONTAINER_MODELS_PATH}:ro
