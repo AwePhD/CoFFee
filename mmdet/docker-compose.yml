@@ -37,6 +37,7 @@ x-dev-args: &dev-args
 
 # Defined here to have shorter service definition
 x-dev-volumes: &dev-volumes
+  - /etc/localtime:/etc/localtime:ro
   - ./entrypoint.sh:/entrypoint.sh
   - torch_cache:${CONTAINER_TORCH_CACHE_PATH}
   - vscode:${CONTAINER_VSCODE_PATH}
@@ -47,9 +48,11 @@ x-dev-volumes: &dev-volumes
   - ${HOST_MODELS_PATH}:${CONTAINER_MODELS_PATH}:ro
   # Grounding DINO
   - ${GROUNDING_DINO_MODEL_FOLDER}:${CONTAINER_HOME_PATH}/models_grounding_dino:ro
+  - ${MINEX_MODEL_FOLDER}:${CONTAINER_HOME_PATH}/models_minex:ro
 
 services:
   builder:
+    <<: *executable
     build:
       target: builder
       args: 
@@ -75,6 +78,8 @@ services:
           - *build-args
           - *dev-args
     environment:
+        MLFLOW_TRACKING_URI: "/home/reusm/code/td/work_dirs/debug/train_mini/mlflow"
+        TOKENIZERS_PARALLELISM: "false"
         TERM: 'screen-256color'
 
     <<: *executable
@@ -90,6 +95,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
+              count: 1
               capabilities: [ gpu ]
 
 volumes:
