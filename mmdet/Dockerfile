@@ -29,7 +29,7 @@ EOT
 # Install the required packages
 RUN <<EOT
 	apt-get update
-  apt-get install -y ffmpeg git ninja-build libglib2.0-0 libsm6 libxrender-dev libxext6
+  apt-get install -y ffmpeg git ninja-build libglib2.0-0 libsm6 libxrender-dev libxext6 bash-completion
   apt-get clean
   rm -rf /var/lib/apt/lists/*
 EOT
@@ -48,7 +48,7 @@ EOT
 FROM builder AS base_devel
 
 RUN <<EOT
-	apt-get update && apt-get install -y vim
+	apt-get update && apt-get install -y vim bash-completion
  apt-get clean
  rm -rf /var/lib/apt/lists/* 
 EOT
@@ -79,7 +79,7 @@ COPY --from=builder \
 ENV DEBIAN_FRONTEND=noninteractive
 RUN <<EOT
 	apt-get update 
-	apt-get install -y vim ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0
+	apt-get install -y vim ffmpeg libsm6 libxext6 git ninja-build bash-completion libglib2.0-0
   apt-get clean
   rm -rf /var/lib/apt/lists/* 
 EOT
