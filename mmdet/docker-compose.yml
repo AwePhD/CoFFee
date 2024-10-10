@@ -78,6 +78,7 @@ services:
 
     <<: *executable
     entrypoint: /entrypoint.sh
+    working_dir: ${CONTAINER_CODE_PATH}/td
 
     network_mode: host
 
