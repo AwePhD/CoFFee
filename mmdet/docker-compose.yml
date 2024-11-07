@@ -5,14 +5,14 @@ x-executable: &executable
   init: true
 
 x-torch-args: &torch-args
-  PYTORCH_VERSION: ${PYTORCH_VERSION}
-  CUDA_VERSION: ${CUDA_VERSION}
-  CUDNN_VERSION: ${CUDNN_VERSION}
+  PYTORCH_VERSION: "2.4.1"
+  CUDA_VERSION: "12.4"
+  CUDNN_VERSION: "9"
 
 x-mmlab-args: &mmlab-args
-  MMENGINE_VERSION: ${MMENGINE_VERSION}
-  MMCV_VERSION: ${MMCV_VERSION}
-  MIM_VERSION: ${MIM_VERSION}
+  MMENGINE_VERSION: "0.10.2"
+  MMCV_VERSION: "2.1.0"
+  MIM_VERSION: "0.3.9"
 
 x-build-args: &build-args
   <<: 
@@ -24,25 +24,20 @@ x-dev-args: &dev-args
   USERNAME: ${USERNAME}
   UID: ${UID}
   GID: ${GID}
-  CONTAINER_HOME_PATH: ${CONTAINER_HOME_PATH}
-  CONTAINER_CODE_PATH: ${CONTAINER_CODE_PATH}
-  CONTAINER_TORCH_CACHE_PATH: ${CONTAINER_TORCH_CACHE_PATH}
-  CONTAINER_VSCODE_PATH: ${CONTAINER_VSCODE_PATH}
+  CONTAINER_HOME: ${CONTAINER_HOME}
+  CONTAINER_CODE: ${CONTAINER_CODE}
+  CONTAINER_TORCH_CACHE: ${CONTAINER_TORCH_CACHE}
+  CONTAINER_VSCODE: ${CONTAINER_VSCODE}
 
 # Defined here to have shorter service definition
 x-dev-volumes: &dev-volumes
   - /etc/localtime:/etc/localtime:ro
   - ./entrypoint.sh:/entrypoint.sh
-  - torch_cache:${CONTAINER_TORCH_CACHE_PATH}
-  - vscode:${CONTAINER_VSCODE_PATH}
-  - ${HOST_CODE_PATH}/mmdet:${CONTAINER_CODE_PATH}/mmdet
-  - ${HOST_CODE_PATH}/mmdetection_td:${CONTAINER_CODE_PATH}/td
-  - ${HOST_CODE_PATH}/pstr:${CONTAINER_CODE_PATH}/pstr
-  - ${HOST_DATA_PATH}:${CONTAINER_DATA_PATH}:ro
-  - ${HOST_MODELS_PATH}:${CONTAINER_MODELS_PATH}:ro
-  # Grounding DINO
-  - ${GROUNDING_DINO_MODEL_FOLDER}:${CONTAINER_HOME_PATH}/models_grounding_dino:ro
-  - ${MINEX_MODEL_FOLDER}:${CONTAINER_HOME_PATH}/models_minex:ro
+  - ${HOST_CODE_MMDET_TD}:${CONTAINER_CODE_MMDET_TD}
+  - ${HOST_DATA}:${CONTAINER_DATA}:ro
+  - ${HOST_MODELS}:${CONTAINER_MODELS}:ro
+  - torch_cache:${CONTAINER_TORCH_CACHE}
+  - vscode:${CONTAINER_VSCODE}
 
 services:
   builder:
@@ -72,13 +67,12 @@ services:
           - *build-args
           - *dev-args
     environment:
-        MLFLOW_TRACKING_URI: "/home/reusm/code/td/work_dirs/debug/train_mini/mlflow"
-        TOKENIZERS_PARALLELISM: "false"
+        CONTAINER_CODE_MMDET_TD: ${CONTAINER_CODE_MMDET_TD}
         TERM: 'screen-256color'
 
     <<: *executable
     entrypoint: /entrypoint.sh
-    working_dir: ${CONTAINER_CODE_PATH}/td
+    working_dir: ${CONTAINER_CODE_MMDET_TD}
 
     network_mode: host
 
