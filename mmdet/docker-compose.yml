@@ -26,7 +26,7 @@ x-dev-args: &dev-args
   GID: ${GID}
   CONTAINER_HOME: ${CONTAINER_HOME}
   CONTAINER_CODE: ${CONTAINER_CODE}
-  CONTAINER_TORCH_CACHE: ${CONTAINER_TORCH_CACHE}
+  CONTAINER_CACHE: ${CONTAINER_CACHE}
   CONTAINER_VSCODE: ${CONTAINER_VSCODE}
 
 # Defined here to have shorter service definition
@@ -36,7 +36,7 @@ x-dev-volumes: &dev-volumes
   - ${HOST_CODE_MMDET_TD}:${CONTAINER_CODE_MMDET_TD}
   - ${HOST_DATA}:${CONTAINER_DATA}:ro
   - ${HOST_MODELS}:${CONTAINER_MODELS}:ro
-  - torch_cache:${CONTAINER_TORCH_CACHE}
+  - torch_cache:${CONTAINER_CACHE}
   - vscode:${CONTAINER_VSCODE}
 
 services:
