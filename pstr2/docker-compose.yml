@@ -1,0 +1,97 @@
+name: pstr2
+# Defined to easily add to a service for debugging
+x-executable: &executable
+  tty: true
+  init: true
+  stdin_open: true
+
+x-torch-args: &torch-args
+  PYTORCH_VERSION: "2.0.1"
+  CUDA_VERSION: "11.7"
+  CUDNN_VERSION: "8"
+
+x-mmlab-args: &mmlab-args
+  MMENGINE_VERSION: "0.10.2"
+  MMCV_VERSION: "2.1.0"
+  MIM_VERSION: "0.3.9"
+
+x-build-args: &build-args
+  <<: 
+    - *mmlab-args
+    - *torch-args
+
+# Defined here to have shorter service definition
+x-dev-args: &dev-args
+  USERNAME: ${USERNAME}
+  UID: ${UID}
+  GID: ${GID}
+  CONTAINER_HOME: ${CONTAINER_HOME}
+  CONTAINER_CODE: ${CONTAINER_CODE}
+  CONTAINER_CACHE: ${CONTAINER_CACHE}
+  CONTAINER_VSCODE: ${CONTAINER_VSCODE}
+
+# Defined here to have shorter service definition
+x-dev-volumes: &dev-volumes
+  - /etc/localtime:/etc/localtime:ro
+  - ./entrypoint.sh:/entrypoint.sh
+  - ${HOST_CODE_PSTR}:${CONTAINER_CODE_PSTR}
+  - ${HOST_DATA}:${CONTAINER_DATA}:ro
+  - ${HOST_MODELS}:${CONTAINER_MODELS}:ro
+  - torch_cache:${CONTAINER_CACHE}
+  - vscode:${CONTAINER_VSCODE}
+
+services:
+  builder:
+    <<: *executable
+    build:
+      target: builder
+      args: 
+        <<: *build-args
+  
+  base-devel:
+    build:
+      target: base_devel
+      args: 
+        <<: *build-args
+
+  base-runtime:
+    build:
+      target: base_runtime
+      args:
+        <<: *build-args
+
+  dev:
+    build:
+      target: dev
+      args:
+        <<:
+          - *build-args
+          - *dev-args
+    environment:
+        CONTAINER_CODE_PSTR: ${CONTAINER_CODE_PSTR}
+        TERM: 'screen-256color'
+
+    <<: *executable
+    entrypoint: /entrypoint.sh
+    working_dir: ${CONTAINER_CODE_PSTR}
+
+    network_mode: host
+    runtime: nvidia
+
+    volumes:
+      *dev-volumes
+    shm_size: ${SHM_SIZE} 
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+
+volumes:
+  vscode:
+    external: true
+  torch_cache: 
+    external: true
+
